@@ -1,29 +1,48 @@
 <?php
+    if ($_SERVER['SERVER_NAME'] != "dias11.cs.trinity.edu") {
+        echo "<p>You must access this page from on campus through dias11.</p>";
+        die ();
+    }
+?>
 
-echo "hello world";
-
-//  Define connection variables/constants
-$dbhost = '127.0.0.1';
-$dbname = 'zsolcher';
-$dbuser = 'zsolcher';
-$dbpass = '0752847';
+<?php
+session_start();
+include("connect.php");
 
 try {
-    // Use a PHP data object (PDO) for security
-    $conn = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // Prepare SQL Query
+    $qry = "SELECT * FROM users WHERE email = :email AND passwd = :password";
+    $stmt = $conn->prepare($qry);
 
-    $qry = "SELECT * FROM users WHERE email = :email AND password = :password";
-
+    // bind parameters
     $user_email = trim($_POST['email']);
     $user_password = trim($_POST['password']);
+    $stmt->bindParam(':email', $user_email);
+    $stmt->bindParam(':password', $user_password);
 
-    $stmt = $conn->prepare($qry);
-    $stmt->execute(array(':email' => $user_email, ':password'=> $user_password));
+    // Execute prepared statement
+    $stmt->execute();
 
-    $num=$stmt->rowCount();
-    if($num > 0) header("location: index.php");
-    else header("location: login.php");
+    // Check if exactly one matching result
+    $noRows =$stmt->rowCount();
+
+    if($noRows == 1) {
+        $topRow = $stmt->fetch();
+
+        // Store session information
+        session_start();
+        $_SESSION['id_user']=$topRow[0];
+        $_SESSION['user_fname']=$topRow[1];
+        $_SESSION['user_lname']=$topRow[2];
+        $_SESSION['user_email']=$topRow[3];
+
+        //redirect to home page
+        header("location: ../index.php");
+    }
+    else {
+        echo "Was not able to login successfully";
+        header("location: ./login.php");
+    }
 
     $conn = null;
 } catch (PDOException $e) {
