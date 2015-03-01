@@ -1,66 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="../css/styles.css" type="text/css">
+</head>
+
+<body>
+
+<h1>Online Task List</h1>
+
+<div class="loginForm">
+    <h3>Login</h3>
+    <form action= "./validate_login.php" method="post">
+        Email: <input type="text" name="email" value="mlewis@trinity.edu"><br>
+        Password: <input type="text" name="password" value="scalaislife"><br>
+        <input type="submit">
+    </form>
+</div>
+
+</body>
+
+</html>
+
+<a href="./php/register.php"> Register</a>
+
 <?php
-
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'GTD');
-define('DB_USER', 'root');
-define('DB_PASSWORD', '');
-
-$db = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-if($db->connect_errno > 0){
-    die('Unable to connect to database [' . $db->connect_error . ']');
+if ($_SERVER['SERVER_NAME'] != "dias11.cs.trinity.edu") {
+    echo "<p>You must access this page from on campus through dias11.</p>";
+    die ();
 }
-
-function Login()
-{
-    if(empty($_POST['username']))
-    {
-        $this->HandleError("Please enter username to continue.");
-        return false;
-    }
-
-    if(empty($_POST['password']))
-    {
-        $this->HandleError("Please enter password to continue.");
-        return false;
-    }
-
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
-
-    if(!$this->validate($username,$password))
-    {
-        return false;
-    }
-
-    session_start();
-
-    $_SESSION[$this->GetLoginSessionVar()] = $username;
-
-    return true;
-}
-
-function validate($username,$password)
-{
-    if(!$this->DBLogin())
-    {
-        $this->HandleError("Database login failed!");
-        return false;
-    }
-    $username = $this->SanitizeForSQL($username);
-    $pwdmd5 = md5($password);
-    $qry = "Select name, email from $this->tablename ".
-        " where username='$username' and password='$pwdmd5' ".
-        " and confirmcode='y'";
-
-    $result = mysql_query($qry,$this->connection);
-
-    if(!$result || mysql_num_rows($result) <= 0)
-    {
-        $this->HandleError("Error logging in. ".
-            "The username or password does not match");
-        return false;
-    }
-    return true;
-}
-
-$db->close();
+?>
